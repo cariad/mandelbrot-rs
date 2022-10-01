@@ -2,6 +2,8 @@
 
 Hello! I'm Cariad and I'm learning Rust by coding a Mandelbrot plotter.
 
+![A black and white plot of the Mandelbrot set](https://github.com/cariad/mandelbrot-rs/blob/render-static/docs/bw.png?raw=true)
+
 ## Usage
 
 ```console
