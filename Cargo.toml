@@ -1,0 +1,7 @@
+[package]
+authors = ["Cariad Eccleston <cariad@cariad.earth>"]
+edition = "2021"
+license = "MIT"
+name = "mandelbrot-rs"
+repository = "https://github.com/cariad/mandelbrot-rs"
+version = "0.1.0"
