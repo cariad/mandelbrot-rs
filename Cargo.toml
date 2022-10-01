@@ -1,7 +1,11 @@
 [package]
 authors = ["Cariad Eccleston <cariad@cariad.earth>"]
+build = "build.rs"
 edition = "2021"
 license = "MIT"
 name = "mandelbrot-rs"
 repository = "https://github.com/cariad/mandelbrot-rs"
 version = "0.1.0"
+
+[dependencies]
+sdl2 = "0.35.2"
