@@ -7,5 +7,7 @@ name = "mandelbrot-rs"
 repository = "https://github.com/cariad/mandelbrot-rs"
 version = "0.1.0"
 
-[dependencies]
-sdl2 = "0.35.2"
+[dependencies.sdl2]
+default-features = false
+features = ["ttf"]
+version = "0.35.2"
