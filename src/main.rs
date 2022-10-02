@@ -4,13 +4,9 @@ pub mod vector2;
 use loupe::Loupe;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{TextureAccess, TextureQuery};
-use sdl2::{
-    event::Event,
-    pixels::Color,
-    rect::Rect,
-};
-use std::path::Path;
+use sdl2::{event::Event, pixels::Color, rect::Rect};
 use std::cmp::max;
+use std::path::Path;
 use vector2::Vector2;
 
 fn main() -> Result<(), String> {
@@ -72,36 +68,6 @@ fn main() -> Result<(), String> {
             }
         }
 
-        // man_texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
-        //     for x in 0..win_size.x {
-        //         for y in 0..win_size.y {
-        //             // Percentage distance from the centre of the canvas.
-        //             let pc = Vector2 {
-        //                 x: (x as f32 / win_max_len - offset.x),
-        //                 y: (y as f32 / win_max_len - offset.y),
-        //             };
-
-        //             let iterations = loupe.iterations(&pc, max_iterations);
-
-        //             let color = if iterations > 30 {
-        //                 Color::RGB(0, 0, 0)
-        //             } else {
-        //                 Color::RGB(255, 255, 255)
-        //             };
-
-        //             let offset = ((y as usize) * pitch) + ((x as usize) * 4);
-
-        //             buffer[offset] = color.b;
-        //             buffer[offset + 1] = color.g;
-        //             buffer[offset + 2] = color.r;
-        //             buffer[offset + 3] = 255;
-        //         }
-        //     }
-        // })?;
-
-        // canvas.copy(&man_texture, None, None)?;
-        // canvas.present();
-
         last = now;
         now = timer.performance_counter();
         delta = ((now - last) * 1000) as f32 / performance_frequency;
@@ -162,7 +128,6 @@ fn main() -> Result<(), String> {
 
         let TextureQuery { width, height, .. } = texture.query();
         let target = Rect::new(8, 8, width, height);
-        canvas.set_draw_color(Color::RGBA(255, 0, 0, 255));
         canvas.copy(&texture, None, Some(target))?;
 
         canvas.present();
