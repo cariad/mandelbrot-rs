@@ -13,7 +13,13 @@ fn main() -> Result<(), String> {
     let win_max_len = max(win_size.x, win_size.y) as f32;
 
     let sdl = sdl2::init()?;
+    let timer = sdl.timer()?;
     let video = sdl.video()?;
+
+    let performance_frequency = timer.performance_frequency() as f32;
+    let mut last: u64;
+    let mut now = timer.performance_counter();
+    let mut delta: f32;
 
     let window = video
         .window("mandelbrot-rs", win_size.x, win_size.y)
@@ -25,7 +31,7 @@ fn main() -> Result<(), String> {
 
     let loupe = Loupe::new();
 
-    let offset = Vector2{
+    let offset = Vector2 {
         x: (win_size.x as f32 / win_max_len) * 0.5,
         y: (win_size.y as f32 / win_max_len) * 0.5,
     };
@@ -42,8 +48,8 @@ fn main() -> Result<(), String> {
 
             let mut iteration: u16 = 0;
 
-            let mut t = Vector2{x: 0.0, y: 0.0};
-            let mut t_squared = Vector2{x: 0.0, y: 0.0};
+            let mut t = Vector2 { x: 0.0, y: 0.0 };
+            let mut t_squared = Vector2 { x: 0.0, y: 0.0 };
 
             while (t_squared.x + t_squared.y) <= 4.0 && iteration < max_iterations {
                 t_squared.x = f32::powi(t.x, 2);
@@ -69,12 +75,23 @@ fn main() -> Result<(), String> {
     canvas.present();
 
     let mut event_pump = sdl.event_pump()?;
+    let mut frame_count: u8 = 0;
 
     'event_loop: loop {
         for event in event_pump.poll_iter() {
             if let Event::Quit { .. } = event {
                 break 'event_loop;
             }
+        }
+
+        last = now;
+        now = timer.performance_counter();
+        delta = ((now - last) * 1000) as f32 / performance_frequency;
+
+        frame_count += 1;
+        if frame_count > 100 {
+            frame_count = 0;
+            println!("delta={delta}");
         }
 
         std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
