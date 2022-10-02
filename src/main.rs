@@ -44,24 +44,9 @@ fn main() -> Result<(), String> {
                 y: (y as f32 / win_max_len - offset.y),
             };
 
-            let man_coords = loupe.get(&pc);
+            let iterations = loupe.iterations(&pc, max_iterations);
 
-            let mut iteration: u16 = 0;
-
-            let mut t = Vector2 { x: 0.0, y: 0.0 };
-            let mut t_squared = Vector2 { x: 0.0, y: 0.0 };
-
-            while (t_squared.x + t_squared.y) <= 4.0 && iteration < max_iterations {
-                t_squared.x = f32::powi(t.x, 2);
-                t_squared.y = f32::powi(t.y, 2);
-
-                t.y = 2.0 * t.x * t.y + man_coords.y;
-                t.x = t_squared.x - t_squared.y + man_coords.x;
-
-                iteration += 1;
-            }
-
-            let color = if iteration > 30 {
+            let color = if iterations > 30 {
                 Color::RGB(0, 0, 0)
             } else {
                 Color::RGB(255, 255, 255)
