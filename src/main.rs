@@ -3,9 +3,10 @@ pub mod vector2;
 
 use loupe::Loupe;
 use sdl2::pixels::PixelFormatEnum;
-use sdl2::render::TextureAccess;
-use sdl2::{event::Event, pixels::Color};
+use sdl2::render::{TextureAccess, TextureQuery};
+use sdl2::{event::Event, pixels::Color, rect::Rect};
 use std::cmp::max;
+use std::path::Path;
 use vector2::Vector2;
 
 fn main() -> Result<(), String> {
@@ -17,6 +18,8 @@ fn main() -> Result<(), String> {
     let sdl = sdl2::init()?;
     let timer = sdl.timer()?;
     let video = sdl.video()?;
+
+    let ttf = sdl2::ttf::init().expect("initialising ttf");
 
     let performance_frequency = timer.performance_frequency() as f32;
     let mut last: u64;
@@ -46,6 +49,9 @@ fn main() -> Result<(), String> {
         )
         .expect("creating texture");
 
+    let font_path = Path::new("fonts/SourceSans3-Bold.ttf");
+    let font = ttf.load_font(font_path, 14)?;
+
     let loupe = Loupe::new();
 
     let offset = Vector2 {
@@ -54,7 +60,6 @@ fn main() -> Result<(), String> {
     };
 
     let mut event_pump = sdl.event_pump()?;
-    let mut frame_count: u8 = 0;
 
     'event_loop: loop {
         for event in event_pump.poll_iter() {
@@ -62,6 +67,10 @@ fn main() -> Result<(), String> {
                 break 'event_loop;
             }
         }
+
+        last = now;
+        now = timer.performance_counter();
+        delta = ((now - last) * 1000) as f32 / performance_frequency;
 
         man_texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
             for x in 0..win_size.x {
@@ -72,9 +81,24 @@ fn main() -> Result<(), String> {
                         y: (y as f32 / win_max_len - offset.y),
                     };
 
-                    let iterations = loupe.iterations(&pc, max_iterations);
+                    let man_coords = loupe.get(&pc);
 
-                    let color = if iterations > 30 {
+                    let mut iteration: u16 = 0;
+
+                    let mut t = Vector2 { x: 0.0, y: 0.0 };
+                    let mut t_squared = Vector2 { x: 0.0, y: 0.0 };
+
+                    while (t_squared.x + t_squared.y) <= 4.0 && iteration < max_iterations {
+                        t_squared.x = f32::powi(t.x, 2);
+                        t_squared.y = f32::powi(t.y, 2);
+
+                        t.y = 2.0 * t.x * t.y + man_coords.y;
+                        t.x = t_squared.x - t_squared.y + man_coords.x;
+
+                        iteration += 1;
+                    }
+
+                    let color = if iteration > 30 {
                         Color::RGB(0, 0, 0)
                     } else {
                         Color::RGB(255, 255, 255)
@@ -91,17 +115,22 @@ fn main() -> Result<(), String> {
         })?;
 
         canvas.copy(&man_texture, None, None)?;
+
+        let fps: u8 = (1000.0 / delta).floor() as u8;
+        let surface = font
+            .render(&fps.to_string().to_owned())
+            .blended(Color::RGBA(255, 0, 0, 255))
+            .expect("rendering font");
+
+        let texture = texture_creator
+            .create_texture_from_surface(&surface)
+            .expect("creating texture");
+
+        let TextureQuery { width, height, .. } = texture.query();
+        let target = Rect::new(8, 8, width, height);
+        canvas.copy(&texture, None, Some(target))?;
+
         canvas.present();
-
-        last = now;
-        now = timer.performance_counter();
-        delta = ((now - last) * 1000) as f32 / performance_frequency;
-
-        frame_count += 1;
-        if frame_count > 100 {
-            frame_count = 0;
-            println!("delta={delta}");
-        }
     }
 
     Ok(())

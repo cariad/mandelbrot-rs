@@ -18,7 +18,7 @@ Experienced Rustaceans might see this and have opinions. You're welcome to keep 
 
 ## Licences
 
-All materials are &copy; 2022 Cariad Eccleston and released under the [MIT licence](LICENSE) unless otherwise stated.
+All materials are &copy; 2022 Cariad Eccleston and released under the [MIT licence](https://github.com/cariad/mandelbrot-rs/blob/main/LICENSE) unless otherwise stated.
 
 ### SDL
 
@@ -35,3 +35,7 @@ All materials are &copy; 2022 Cariad Eccleston and released under the [MIT licen
 > 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
 > 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 > 3. This notice may not be removed or altered from any source distribution.
+
+### SourceSans3-Bold.ttf
+
+SourceSans3-Bold.ttf is &copy; 2010-2020 Adobe and distributed under the [SIL Open Font License 1.1](https://github.com/cariad/mandelbrot-rs/blob/main/fonts/LICENSE).
