@@ -2,7 +2,14 @@ pub mod loupe;
 pub mod vector2;
 
 use loupe::Loupe;
-use sdl2::{event::Event, pixels::Color, rect::Point};
+use sdl2::pixels::PixelFormatEnum;
+use sdl2::render::{TextureAccess, TextureQuery};
+use sdl2::{
+    event::Event,
+    pixels::Color,
+    rect::{Point, Rect},
+};
+use std::path::Path;
 use std::{cmp::max, time::Duration};
 use vector2::Vector2;
 
@@ -16,6 +23,8 @@ fn main() -> Result<(), String> {
     let timer = sdl.timer()?;
     let video = sdl.video()?;
 
+    let ttf = sdl2::ttf::init().expect("initialising ttf");
+
     let performance_frequency = timer.performance_frequency() as f32;
     let mut last: u64;
     let mut now = timer.performance_counter();
@@ -27,7 +36,28 @@ fn main() -> Result<(), String> {
         .build()
         .expect("building window");
 
-    let mut canvas = window.into_canvas().build().expect("building canvas");
+    let mut canvas = window
+        .into_canvas()
+        .accelerated()
+        .build()
+        .expect("building canvas");
+
+    let texture_creator = canvas.texture_creator();
+
+    let mut man_texture = texture_creator
+        .create_texture(
+            PixelFormatEnum::RGB888,
+            TextureAccess::Streaming,
+            win_size.x,
+            win_size.y,
+        )
+        .expect("creating texture");
+
+    let font_path = Path::new("fonts/SourceSans3-Bold.ttf");
+
+    let font = ttf.load_font(font_path, 14)?;
+
+    // canvas.clear();
 
     let loupe = Loupe::new();
 
@@ -36,46 +66,45 @@ fn main() -> Result<(), String> {
         y: (win_size.y as f32 / win_max_len) * 0.5,
     };
 
-    for x in 0..win_size.x {
-        for y in 0..win_size.y {
-            // Percentage distance from the centre of the canvas.
-            let pc = Vector2 {
-                x: (x as f32 / win_max_len - offset.x),
-                y: (y as f32 / win_max_len - offset.y),
-            };
+    // for x in 0..win_size.x {
+    //     for y in 0..win_size.y {
+    //         // Percentage distance from the centre of the canvas.
+    //         let pc = Vector2 {
+    //             x: (x as f32 / win_max_len - offset.x),
+    //             y: (y as f32 / win_max_len - offset.y),
+    //         };
 
-            let man_coords = loupe.get(&pc);
+    //         let man_coords = loupe.get(&pc);
 
-            let mut iteration: u16 = 0;
+    //         let mut iteration: u16 = 0;
 
-            let mut t = Vector2 { x: 0.0, y: 0.0 };
-            let mut t_squared = Vector2 { x: 0.0, y: 0.0 };
+    //         let mut t = Vector2 { x: 0.0, y: 0.0 };
+    //         let mut t_squared = Vector2 { x: 0.0, y: 0.0 };
 
-            while (t_squared.x + t_squared.y) <= 4.0 && iteration < max_iterations {
-                t_squared.x = f32::powi(t.x, 2);
-                t_squared.y = f32::powi(t.y, 2);
+    //         while (t_squared.x + t_squared.y) <= 4.0 && iteration < max_iterations {
+    //             t_squared.x = f32::powi(t.x, 2);
+    //             t_squared.y = f32::powi(t.y, 2);
 
-                t.y = 2.0 * t.x * t.y + man_coords.y;
-                t.x = t_squared.x - t_squared.y + man_coords.x;
+    //             t.y = 2.0 * t.x * t.y + man_coords.y;
+    //             t.x = t_squared.x - t_squared.y + man_coords.x;
 
-                iteration += 1;
-            }
+    //             iteration += 1;
+    //         }
 
-            let color = if iteration > 30 {
-                Color::RGB(0, 0, 0)
-            } else {
-                Color::RGB(255, 255, 255)
-            };
+    //         let color = if iteration > 30 {
+    //             Color::RGB(0, 0, 0)
+    //         } else {
+    //             Color::RGB(255, 255, 255)
+    //         };
 
-            canvas.set_draw_color(color);
-            canvas.draw_point(Point::new(x as i32, y as i32))?;
-        }
-    }
+    //         // canvas.set_draw_color(color);
+    //         // canvas.draw_point(Point::new(x as i32, y as i32))?;
+    //     }
+    // }
 
-    canvas.present();
+    // canvas.present();
 
     let mut event_pump = sdl.event_pump()?;
-    let mut frame_count: u8 = 0;
 
     'event_loop: loop {
         for event in event_pump.poll_iter() {
@@ -88,13 +117,66 @@ fn main() -> Result<(), String> {
         now = timer.performance_counter();
         delta = ((now - last) * 1000) as f32 / performance_frequency;
 
-        frame_count += 1;
-        if frame_count > 100 {
-            frame_count = 0;
-            println!("delta={delta}");
-        }
+        man_texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
+            for x in 0..win_size.x {
+                for y in 0..win_size.y {
+                    // Percentage distance from the centre of the canvas.
+                    let pc = Vector2 {
+                        x: (x as f32 / win_max_len - offset.x),
+                        y: (y as f32 / win_max_len - offset.y),
+                    };
 
-        std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+                    let man_coords = loupe.get(&pc);
+
+                    let mut iteration: u16 = 0;
+
+                    let mut t = Vector2 { x: 0.0, y: 0.0 };
+                    let mut t_squared = Vector2 { x: 0.0, y: 0.0 };
+
+                    while (t_squared.x + t_squared.y) <= 4.0 && iteration < max_iterations {
+                        t_squared.x = f32::powi(t.x, 2);
+                        t_squared.y = f32::powi(t.y, 2);
+
+                        t.y = 2.0 * t.x * t.y + man_coords.y;
+                        t.x = t_squared.x - t_squared.y + man_coords.x;
+
+                        iteration += 1;
+                    }
+
+                    let color = if iteration > 30 {
+                        Color::RGB(0, 0, 0)
+                    } else {
+                        Color::RGB(255, 255, 255)
+                    };
+
+                    let offset = ((y as usize) * pitch) + ((x as usize) * 4);
+
+                    buffer[offset] = color.b;
+                    buffer[offset + 1] = color.g;
+                    buffer[offset + 2] = color.r;
+                    buffer[offset + 3] = 255;
+                }
+            }
+        })?;
+
+        canvas.copy(&man_texture, None, None)?;
+
+        let fps: u8 = (1000.0 / delta).floor() as u8;
+        let surface = font
+            .render(&fps.to_string().to_owned())
+            .blended(Color::RGBA(255, 0, 0, 255))
+            .expect("rendering font");
+
+        let texture = texture_creator
+            .create_texture_from_surface(&surface)
+            .expect("creating texture");
+
+        let TextureQuery { width, height, .. } = texture.query();
+        let target = Rect::new(8, 8, width, height);
+        canvas.set_draw_color(Color::RGBA(255, 0, 0, 255));
+        canvas.copy(&texture, None, Some(target))?;
+
+        canvas.present();
     }
 
     Ok(())
