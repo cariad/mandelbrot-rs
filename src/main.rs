@@ -7,10 +7,10 @@ use sdl2::render::{TextureAccess, TextureQuery};
 use sdl2::{
     event::Event,
     pixels::Color,
-    rect::{Point, Rect},
+    rect::Rect,
 };
 use std::path::Path;
-use std::{cmp::max, time::Duration};
+use std::cmp::max;
 use vector2::Vector2;
 
 fn main() -> Result<(), String> {
@@ -54,10 +54,7 @@ fn main() -> Result<(), String> {
         .expect("creating texture");
 
     let font_path = Path::new("fonts/SourceSans3-Bold.ttf");
-
     let font = ttf.load_font(font_path, 14)?;
-
-    // canvas.clear();
 
     let loupe = Loupe::new();
 
@@ -65,44 +62,6 @@ fn main() -> Result<(), String> {
         x: (win_size.x as f32 / win_max_len) * 0.5,
         y: (win_size.y as f32 / win_max_len) * 0.5,
     };
-
-    // for x in 0..win_size.x {
-    //     for y in 0..win_size.y {
-    //         // Percentage distance from the centre of the canvas.
-    //         let pc = Vector2 {
-    //             x: (x as f32 / win_max_len - offset.x),
-    //             y: (y as f32 / win_max_len - offset.y),
-    //         };
-
-    //         let man_coords = loupe.get(&pc);
-
-    //         let mut iteration: u16 = 0;
-
-    //         let mut t = Vector2 { x: 0.0, y: 0.0 };
-    //         let mut t_squared = Vector2 { x: 0.0, y: 0.0 };
-
-    //         while (t_squared.x + t_squared.y) <= 4.0 && iteration < max_iterations {
-    //             t_squared.x = f32::powi(t.x, 2);
-    //             t_squared.y = f32::powi(t.y, 2);
-
-    //             t.y = 2.0 * t.x * t.y + man_coords.y;
-    //             t.x = t_squared.x - t_squared.y + man_coords.x;
-
-    //             iteration += 1;
-    //         }
-
-    //         let color = if iteration > 30 {
-    //             Color::RGB(0, 0, 0)
-    //         } else {
-    //             Color::RGB(255, 255, 255)
-    //         };
-
-    //         // canvas.set_draw_color(color);
-    //         // canvas.draw_point(Point::new(x as i32, y as i32))?;
-    //     }
-    // }
-
-    // canvas.present();
 
     let mut event_pump = sdl.event_pump()?;
 
@@ -112,6 +71,36 @@ fn main() -> Result<(), String> {
                 break 'event_loop;
             }
         }
+
+        // man_texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
+        //     for x in 0..win_size.x {
+        //         for y in 0..win_size.y {
+        //             // Percentage distance from the centre of the canvas.
+        //             let pc = Vector2 {
+        //                 x: (x as f32 / win_max_len - offset.x),
+        //                 y: (y as f32 / win_max_len - offset.y),
+        //             };
+
+        //             let iterations = loupe.iterations(&pc, max_iterations);
+
+        //             let color = if iterations > 30 {
+        //                 Color::RGB(0, 0, 0)
+        //             } else {
+        //                 Color::RGB(255, 255, 255)
+        //             };
+
+        //             let offset = ((y as usize) * pitch) + ((x as usize) * 4);
+
+        //             buffer[offset] = color.b;
+        //             buffer[offset + 1] = color.g;
+        //             buffer[offset + 2] = color.r;
+        //             buffer[offset + 3] = 255;
+        //         }
+        //     }
+        // })?;
+
+        // canvas.copy(&man_texture, None, None)?;
+        // canvas.present();
 
         last = now;
         now = timer.performance_counter();
